@@ -19,15 +19,17 @@ with open("test.txt") as f:
     for line in f.readlines():
         line = line.rstrip()
         ln_lst = line.split(" ")
-        hist_el[ln_lst[0]] = hist_el.get(ln_lst[0], 0) + 1
+        hist_el[ln_lst[-1]] = hist_el.get(ln_lst[-1], 0) + 1
         added = []
-        for i in range(1, len(ln_lst)):
+        for i in range(len(ln_lst)-1):
             if ln_lst[i] not in added:
                 hist_type[ln_lst[i]] = hist_type.get(ln_lst[i], 0) + 1
                 added.append(ln_lst[i])
 
 hist_el = dict(sorted(hist_el.items()))
 hist_type = dict(sorted(hist_type.items()))
+print(hist_el)
+print(hist_type)
 
 # An "interface" to matplotlib.axes.Axes.hist() method
 plt.bar(hist_el.keys(), hist_el.values(), 1.0, color='#0504aa')
