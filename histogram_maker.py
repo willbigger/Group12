@@ -5,6 +5,7 @@ displays two histograms of the frequency from each advertsier
 
 
 
-print("hello world")
-
+with open("test.txt") as f:
+    for line in f.readlines():
+        print(line)
 
