@@ -11,7 +11,8 @@
 #include <bluetooth/gatt.h>
 #include <sys/byteorder.h>
 
-#define LAB2_SERVICE_UUID BT_UUID_128_ENCODE(0x5253FF4B, 0xE47C, 0x4EC8, 0x9792, 0x69FDF4923B0C)
+//central
+#define LAB2_SERVICE_UUID BT_UUID_128_ENCODE(0xBDFC9792, 0x8234, 0x405E, 0xAE02, 0x35EF3274B299)
 #define LAB2_SERVICE_CHARACTERISTIC_UUID 0x000a
 
 static void start_scan(void);
@@ -58,7 +59,7 @@ static uint8_t discover_func(struct bt_conn *conn,
 		return BT_GATT_ITER_STOP;
 	}
 
-	printk("[ATTRIBUTE] handle %u\n", attr->handle);
+	// printk("[ATTRIBUTE] handle %u\n", attr->handle);
 
 	if (bt_uuid_cmp(discover_params.uuid, BT_UUID_DECLARE_128(LAB2_SERVICE_UUID)) == 0) {
 		// printk("Found service\n");

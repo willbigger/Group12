@@ -14,20 +14,18 @@
 #include <bluetooth/uuid.h>
 #include <bluetooth/gatt.h>
 
-#define LAB2_SERVICE_UUID BT_UUID_128_ENCODE(0x5253FF4B, 0xE47C, 0x4EC8, 0x9792, 0x69FDF4923B0C)
-// #define LAB2_SERVICE_UUID BT_UUID_128_ENCODE(0xBDFC9792, 0x8234, 0x405E, 0xAE02, 0x35EF3274B299)
+//peripheral
+#define LAB2_SERVICE_UUID BT_UUID_128_ENCODE(0xBDFC9792, 0x8234, 0x405E, 0xAE02, 0x35EF3274B299)
+
 
 
 static ssize_t characteristic_read(struct bt_conn *conn, const struct bt_gatt_attr *attr, void *buf, uint16_t len, uint16_t offset);
 
 // Global value that saves state for the characteristic.
 uint32_t characteristic_value = 0x0;
-// uint32_t characteristic_value_2 = 0x0;
-// uint32_t characteristic_value_3 = 0x0;
-// uint32_t characteristic_value_4 = 0x0;
 
 // Set up the advertisement data.
-#define DEVICE_NAME "LED_P"
+#define DEVICE_NAME "IoTWSensor"
 #define DEVICE_NAME_LEN (sizeof(DEVICE_NAME) - 1)
 
 static const struct bt_data ad[] = {
@@ -40,7 +38,14 @@ BT_GATT_SERVICE_DEFINE(lab2_service,
 	BT_GATT_PRIMARY_SERVICE(
 		BT_UUID_DECLARE_128(LAB2_SERVICE_UUID)
 	),
-	BT_GATT_CHARACTERISTIC(BT_UUID_DECLARE_16(0x000a), BT_GATT_CHRC_READ,
+	// 4 characterstics
+	BT_GATT_CHARACTERISTIC(BT_UUID_DECLARE_16(0x0001), BT_GATT_CHRC_READ,
+			       BT_GATT_PERM_READ, characteristic_read, NULL, &characteristic_value),
+	BT_GATT_CHARACTERISTIC(BT_UUID_DECLARE_16(0x0002), BT_GATT_CHRC_READ,
+			       BT_GATT_PERM_READ, characteristic_read, NULL, &characteristic_value),
+	BT_GATT_CHARACTERISTIC(BT_UUID_DECLARE_16(0x0003), BT_GATT_CHRC_READ,
+			       BT_GATT_PERM_READ, characteristic_read, NULL, &characteristic_value),
+	BT_GATT_CHARACTERISTIC(BT_UUID_DECLARE_16(0x0004), BT_GATT_CHRC_READ,
 			       BT_GATT_PERM_READ, characteristic_read, NULL, &characteristic_value),
 );
 
@@ -59,11 +64,13 @@ static ssize_t characteristic_read(struct bt_conn *conn,
 	uint32_t *value = attr->user_data;
 
 	// Need to encode data into a buffer to send to client.
-	uint32_t out_buffer = value;
+	uint8_t out_buffer[4] = {0};
 
-	*value += 0x00000001;
+	out_buffer[0]=0xc5;
+	out_buffer[1]=0xec;
+	out_buffer[2]=0x45;
+	out_buffer[3]=0x01;
 
-	printk("%x\n", *value);
 	// User helper function to encode the output data to send to
 	// the client.
 	return bt_gatt_attr_read(conn, attr, buf, len, offset, out_buffer, 4);
