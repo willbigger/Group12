@@ -39,6 +39,7 @@ static struct gpio_callback button1_cb_data;
 static struct gpio_callback button2_cb_data;
 static struct gpio_callback button3_cb_data;
 static struct gpio_callback button4_cb_data;
+
 // Global value that saves state for the characteristic.
 uint32_t characteristic1_value = 0x0;
 uint32_t characteristic2_value = 0x0;
@@ -109,7 +110,7 @@ static ssize_t characteristic_read(struct bt_conn *conn, const struct bt_gatt_at
 
 
 // Set up the advertisement data.
-#define DEVICE_NAME "IoTWSensor"
+#define DEVICE_NAME "IoTWSensor12"
 #define DEVICE_NAME_LEN (sizeof(DEVICE_NAME) - 1)
 
 static const struct bt_data ad[] = {
@@ -118,10 +119,17 @@ static const struct bt_data ad[] = {
 };
 
 void on_cccd_changed(const struct bt_gatt_attr *attr, uint16_t value){
-	init_button(&button1, &button1_cb_data, button1_pressed);
-	init_button(&button2, &button2_cb_data, button2_pressed);
-	init_button(&button3, &button3_cb_data, button3_pressed);
-	init_button(&button4, &button4_cb_data, button4_pressed);
+	// check if notifciation is enabled here
+	switch(value)
+	{
+		case BT_GATT_CCC_NOTIFY:
+		printk("notify");
+	}
+	
+	// init_button(&button1, &button1_cb_data, button1_pressed);
+	// init_button(&button2, &button2_cb_data, button2_pressed);
+	// init_button(&button3, &button3_cb_data, button3_pressed);
+	// init_button(&button4, &button4_cb_data, button4_pressed);
 }
 
 // Setup the the service and characteristics.
@@ -129,16 +137,26 @@ BT_GATT_SERVICE_DEFINE(lab2_service,
 	BT_GATT_PRIMARY_SERVICE(
 		BT_UUID_DECLARE_128(LAB2_SERVICE_UUID)
 	),
-	BT_GATT_CCC(on_cccd_changed, BT_GATT_PERM_READ | BT_GATT_PERM_WRITE), // notifies a change
 	// 4 characterstics
-	BT_GATT_CHARACTERISTIC(BT_UUID_DECLARE_16(0x0001), BT_GATT_CHRC_NOTIFY,
+	BT_GATT_CHARACTERISTIC(BT_UUID_DECLARE_16(0x0001), BT_GATT_CCC_NOTIFY,
 			       BT_GATT_PERM_READ, characteristic_read, NULL, &characteristic1_value),
-	BT_GATT_CHARACTERISTIC(BT_UUID_DECLARE_16(0x0002), BT_GATT_CHRC_NOTIFY,
+	BT_GATT_CCC(on_cccd_changed, BT_GATT_PERM_READ | BT_GATT_PERM_WRITE), // notifies a change
+
+
+	BT_GATT_CHARACTERISTIC(BT_UUID_DECLARE_16(0x0002), BT_GATT_CCC_NOTIFY,
 			       BT_GATT_PERM_READ, characteristic_read, NULL, &characteristic2_value),
-	BT_GATT_CHARACTERISTIC(BT_UUID_DECLARE_16(0x0003), BT_GATT_CHRC_NOTIFY,
+	BT_GATT_CCC(on_cccd_changed, BT_GATT_PERM_READ | BT_GATT_PERM_WRITE), // notifies a change
+
+
+	BT_GATT_CHARACTERISTIC(BT_UUID_DECLARE_16(0x0003), BT_GATT_CCC_NOTIFY,
 			       BT_GATT_PERM_READ, characteristic_read, NULL, &characteristic3_value),
-	BT_GATT_CHARACTERISTIC(BT_UUID_DECLARE_16(0x0004), BT_GATT_CHRC_NOTIFY,
+	BT_GATT_CCC(on_cccd_changed, BT_GATT_PERM_READ | BT_GATT_PERM_WRITE), // notifies a change
+
+
+	BT_GATT_CHARACTERISTIC(BT_UUID_DECLARE_16(0x0004), BT_GATT_CCC_NOTIFY,
 			       BT_GATT_PERM_READ, characteristic_read, NULL, &characteristic4_value),
+	BT_GATT_CCC(on_cccd_changed, BT_GATT_PERM_READ | BT_GATT_PERM_WRITE), // notifies a change
+
 );
 
 
