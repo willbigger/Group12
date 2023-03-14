@@ -1,19 +1,78 @@
 #include <zephyr/types.h>
 #include <stddef.h>
 #include <errno.h>
-#include <zephyr.h>
 #include <sys/printk.h>
-
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/hci.h>
 #include <bluetooth/conn.h>
 #include <bluetooth/uuid.h>
 #include <bluetooth/gatt.h>
 #include <sys/byteorder.h>
+#include <zephyr.h>
+#include <device.h>
+#include <devicetree.h>
+#include <drivers/gpio.h>
+
+
+#define LED0_NODE DT_ALIAS(led0)
+#define LED1_NODE DT_ALIAS(led1)
+#define LED2_NODE DT_ALIAS(led2)
+#define LED3_NODE DT_ALIAS(led3)
+
+#if DT_NODE_HAS_STATUS(LED0_NODE, okay)
+#define LED0	DT_GPIO_LABEL(LED0_NODE, gpios)
+#define PIN0	DT_GPIO_PIN(LED0_NODE, gpios)
+#define FLAGS0	DT_GPIO_FLAGS(LED0_NODE, gpios)
+#else
+/* A build error here means your board isn't set up to blink an LED. */
+#error "Unsupported board: led0 devicetree alias is not defined"
+#define LED0	""
+#define PIN0	0
+#define FLAGS0	0
+#endif
+
+#if DT_NODE_HAS_STATUS(LED1_NODE, okay)
+#define LED1	DT_GPIO_LABEL(LED1_NODE, gpios)
+#define PIN1	DT_GPIO_PIN(LED1_NODE, gpios)
+#define FLAGS1	DT_GPIO_FLAGS(LED1_NODE, gpios)
+#else
+/* A build error here means your board isn't set up to blink an LED. */
+#error "Unsupported board: led0 devicetree alias is not defined"
+#define LED1	""
+#define PIN1	0
+#define FLAGS1	0
+#endif
+
+#if DT_NODE_HAS_STATUS(LED2_NODE, okay)
+#define LED2	DT_GPIO_LABEL(LED2_NODE, gpios)
+#define PIN2	DT_GPIO_PIN(LED2_NODE, gpios)
+#define FLAGS2	DT_GPIO_FLAGS(LED2_NODE, gpios)
+#else
+/* A build error here means your board isn't set up to blink an LED. */
+#error "Unsupported board: led0 devicetree alias is not defined"
+#define LED2	""
+#define PIN2	0
+#define FLAGS2	0
+#endif
+
+#if DT_NODE_HAS_STATUS(LED3_NODE, okay)
+#define LED3	DT_GPIO_LABEL(LED3_NODE, gpios)
+#define PIN3	DT_GPIO_PIN(LED3_NODE, gpios)
+#define FLAGS3	DT_GPIO_FLAGS(LED3_NODE, gpios)
+#else
+/* A build error here means your board isn't set up to blink an LED. */
+#error "Unsupported board: led0 devicetree alias is not defined"
+#define LED3	""
+#define PIN3	0
+#define FLAGS3	0
+#endif
 
 //central
 #define LAB2_SERVICE_UUID BT_UUID_128_ENCODE(0xBDFC9792, 0x8234, 0x405E, 0xAE02, 0x35EF3274B299)
-#define LAB2_SERVICE_CHARACTERISTIC_UUID 0x000a
+#define LAB2_SERVICE_CHARACTERISTIC_UUID 0x0001
+#define LAB2_SERVICE_CHARACTERISTIC_UUID 0x0002
+#define LAB2_SERVICE_CHARACTERISTIC_UUID 0x0003
+#define LAB2_SERVICE_CHARACTERISTIC_UUID 0x0004
 
 static void start_scan(void);
 
@@ -43,6 +102,34 @@ static uint8_t read_func(struct bt_conn *conn, uint8_t err,
 
 		printk("Read: 0x%x\n", val);
 	}
+
+	return BT_GATT_ITER_STOP;
+}
+
+// Callback after receiving a notification.
+static uint8_t notif_func(struct bt_conn *conn, uint8_t err,
+			       struct bt_gatt_read_params *params,
+			       const void *data, uint16_t length)
+{
+	const struct device *dev;
+	bool led_is_on = true;
+	int ret;
+
+	if (err) {
+		printk("notify failed (err %d)\n", err);
+	}
+
+	dev = device_get_binding(LED0);
+	if (dev == NULL) {
+		return;
+	}
+
+	ret = gpio_pin_configure(dev, PIN0, GPIO_OUTPUT_ACTIVE | FLAGS0);
+	if (ret < 0) {
+		return;
+	}
+
+	gpio_pin_set(dev, PIN0, (int)led_is_on);
 
 	return BT_GATT_ITER_STOP;
 }
@@ -81,7 +168,8 @@ static uint8_t discover_func(struct bt_conn *conn,
 		read_params.single.handle = bt_gatt_attr_value_handle(attr);
 		read_params.single.offset = 0U;
 
-		err = bt_gatt_read(conn, &read_params);
+		//err = bt_gatt_read(conn, &read_params);
+		err = bt_gatt_notify_cb(conn, &read_params);
 		if (err) {
 			printk("Read failed (err %d)\n", err);
 		}
