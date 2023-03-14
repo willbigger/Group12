@@ -110,7 +110,7 @@ static ssize_t characteristic_read(struct bt_conn *conn, const struct bt_gatt_at
 
 
 // Set up the advertisement data.
-#define DEVICE_NAME "IoTWSensor12"
+#define DEVICE_NAME "Group12"
 #define DEVICE_NAME_LEN (sizeof(DEVICE_NAME) - 1)
 
 static const struct bt_data ad[] = {
