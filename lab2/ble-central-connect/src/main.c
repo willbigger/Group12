@@ -79,38 +79,82 @@ static void start_scan(void);
 static struct bt_conn *default_conn;
 
 static struct bt_uuid* search_service_uuid = BT_UUID_DECLARE_128(LAB2_SERVICE_UUID);
-static struct bt_uuid* search_characteristic_uuid = BT_UUID_DECLARE_16(LAB2_SERVICE_CHARACTERISTIC_UUID1);
+static struct bt_uuid* search_characteristic_uuid_1 = BT_UUID_DECLARE_16(LAB2_SERVICE_CHARACTERISTIC_UUID1);
+static struct bt_uuid* search_characteristic_uuid_2 = BT_UUID_DECLARE_16(LAB2_SERVICE_CHARACTERISTIC_UUID2);
+static struct bt_uuid* search_characteristic_uuid_3 = BT_UUID_DECLARE_16(LAB2_SERVICE_CHARACTERISTIC_UUID3);
+static struct bt_uuid* search_characteristic_uuid_4 = BT_UUID_DECLARE_16(LAB2_SERVICE_CHARACTERISTIC_UUID4);
 static struct bt_gatt_discover_params discover_params;
-static struct bt_gatt_read_params read_params;
-static struct bt_gatt_notify_params notify_params;
+static struct bt_gatt_notify_params notify_params1;
+static struct bt_gatt_notify_params notify_params2;
+static struct bt_gatt_notify_params notify_params3;
+static struct bt_gatt_notify_params notify_params4;
 
 // Callback after receiving a notification.
-static uint8_t notif_func(struct bt_conn *conn, uint8_t err,
+static uint8_t notif_func_1(struct bt_conn *conn, uint8_t err,
 			       struct bt_gatt_read_params *params,
 			       const void *data, uint16_t length)
 {
 	const struct device *dev;
 	bool led_is_on = true;
 	int ret;
-
-	printk("Enering notify function");
-
-	if (err) {
-		printk("notify failed (err %d)\n", err);
-	}
-
+	printk("Enering notify function 1");
+	if (err) {printk("notify failed (err %d)\n", err);}
 	dev = device_get_binding(LED0);
-	if (dev == NULL) {
-		return;
-	}
-
+	if (dev == NULL) {return;}
 	ret = gpio_pin_configure(dev, PIN0, GPIO_OUTPUT_ACTIVE | FLAGS0);
-	if (ret < 0) {
-		return;
-	}
-
+	if (ret < 0) {return;}
 	gpio_pin_set(dev, PIN0, (int)led_is_on);
+	return BT_GATT_ITER_STOP;
+}
 
+static uint8_t notif_func_2(struct bt_conn *conn, uint8_t err,
+			       struct bt_gatt_read_params *params,
+			       const void *data, uint16_t length)
+{
+	const struct device *dev;
+	bool led_is_on = true;
+	int ret;
+	printk("Enering notify function 2");
+	if (err) {printk("notify failed (err %d)\n", err);}
+	dev = device_get_binding(LED1);
+	if (dev == NULL) {return;}
+	ret = gpio_pin_configure(dev, PIN1, GPIO_OUTPUT_ACTIVE | FLAGS1);
+	if (ret < 0) {return;}
+	gpio_pin_set(dev, PIN1, (int)led_is_on);
+	return BT_GATT_ITER_STOP;
+}
+
+static uint8_t notif_func_3(struct bt_conn *conn, uint8_t err,
+			       struct bt_gatt_read_params *params,
+			       const void *data, uint16_t length)
+{
+	const struct device *dev;
+	bool led_is_on = true;
+	int ret;
+	printk("Enering notify function 3");
+	if (err) {printk("notify failed (err %d)\n", err);}
+	dev = device_get_binding(LED2);
+	if (dev == NULL) {return;}
+	ret = gpio_pin_configure(dev, PIN2, GPIO_OUTPUT_ACTIVE | FLAGS2);
+	if (ret < 0) {return;}
+	gpio_pin_set(dev, PIN2, (int)led_is_on);
+	return BT_GATT_ITER_STOP;
+}
+
+static uint8_t notif_func_4(struct bt_conn *conn, uint8_t err,
+			       struct bt_gatt_read_params *params,
+			       const void *data, uint16_t length)
+{
+	const struct device *dev;
+	bool led_is_on = true;
+	int ret;
+	printk("Enering notify function 4");
+	if (err) {printk("notify failed (err %d)\n", err);}
+	dev = device_get_binding(LED3);
+	if (dev == NULL) {return;}
+	ret = gpio_pin_configure(dev, PIN3, GPIO_OUTPUT_ACTIVE | FLAGS3);
+	if (ret < 0) {return;}
+	gpio_pin_set(dev, PIN3, (int)led_is_on);
 	return BT_GATT_ITER_STOP;
 }
 
@@ -130,34 +174,60 @@ static uint8_t discover_func(struct bt_conn *conn,
 
 	if (bt_uuid_cmp(discover_params.uuid, BT_UUID_DECLARE_128(LAB2_SERVICE_UUID)) == 0) {
 		// printk("Found service\n");
-
-		discover_params.uuid = search_characteristic_uuid;
+		discover_params.uuid = search_characteristic_uuid_1;
 		discover_params.start_handle = attr->handle + 1;
 		discover_params.type = BT_GATT_DISCOVER_CHARACTERISTIC;
-
 		err = bt_gatt_discover(conn, &discover_params);
 		if (err) {
 			printk("Discover failed (err %d)\n", err);
 		}
 	}
-	else if (
-		(bt_uuid_cmp(discover_params.uuid, BT_UUID_DECLARE_16(LAB2_SERVICE_CHARACTERISTIC_UUID1)) == 0) ||
-		(bt_uuid_cmp(discover_params.uuid, BT_UUID_DECLARE_16(LAB2_SERVICE_CHARACTERISTIC_UUID2)) == 0) ||
-		(bt_uuid_cmp(discover_params.uuid, BT_UUID_DECLARE_16(LAB2_SERVICE_CHARACTERISTIC_UUID3)) == 0) ||
-		(bt_uuid_cmp(discover_params.uuid, BT_UUID_DECLARE_16(LAB2_SERVICE_CHARACTERISTIC_UUID4)) == 0)
-	) {
+	else if ((bt_uuid_cmp(discover_params.uuid, BT_UUID_DECLARE_16(LAB2_SERVICE_CHARACTERISTIC_UUID1)) == 0)) {
 		// printk("Found characteristic\n");
-		notify_params.func = notif_func;
-		notify_params.attr = attr;
-
+		printk("Subscription 1\n");
+		notify_params1.func = notif_func_1;
+		notify_params1.attr = attr;
 		//err = bt_gatt_read(conn, &read_params);
-		err = bt_gatt_notify_cb(conn, &notify_params);
+		err = bt_gatt_notify_cb(conn, &notify_params1);
+		discover_params.uuid++;
+		if (err) {
+			printk("Read failed (err %d)\n", err);
+		}
+	} else if ((bt_uuid_cmp(discover_params.uuid, BT_UUID_DECLARE_16(LAB2_SERVICE_CHARACTERISTIC_UUID2)) == 0)){
+		// printk("Found characteristic\n");
+		printk("Subscription 2\n");
+		notify_params2.func = notif_func_2;
+		notify_params2.attr = attr;
+		//err = bt_gatt_read(conn, &read_params);
+		err = bt_gatt_notify_cb(conn, &notify_params2);
+		discover_params.uuid++;
+		if (err) {
+			printk("Read failed (err %d)\n", err);
+		}
+	} else if ((bt_uuid_cmp(discover_params.uuid, BT_UUID_DECLARE_16(LAB2_SERVICE_CHARACTERISTIC_UUID3)) == 0)){
+		// printk("Found characteristic\n");
+		printk("Subscription 3\n");
+		notify_params3.func = notif_func_3;
+		notify_params3.attr = attr;
+		//err = bt_gatt_read(conn, &read_params);
+		err = bt_gatt_notify_cb(conn, &notify_params3);
+		discover_params.uuid++;
+		if (err) {
+			printk("Read failed (err %d)\n", err);
+		}
+	} else if ((bt_uuid_cmp(discover_params.uuid, BT_UUID_DECLARE_16(LAB2_SERVICE_CHARACTERISTIC_UUID4)) == 0)){
+		// printk("Found characteristic\n");
+		printk("Subscription 4\n");
+		notify_params4.func = notif_func_4;
+		notify_params4.attr = attr;
+		//err = bt_gatt_read(conn, &read_params);
+		err = bt_gatt_notify_cb(conn, &notify_params4);
 		if (err) {
 			printk("Read failed (err %d)\n", err);
 		}
 	}
 
-	return BT_GATT_ITER_STOP;
+	return BT_GATT_ITER_CONTINUE;
 }
 
 static void connected(struct bt_conn *conn, uint8_t conn_err)
