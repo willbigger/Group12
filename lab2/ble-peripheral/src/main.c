@@ -22,7 +22,7 @@
 
 //peripheral
 #define LAB2_SERVICE_UUID BT_UUID_128_ENCODE(0xBDFC9792, 0x8234, 0x405E, 0xAE02, 0x35EF3274B299)
-
+#define DEFAULT_UPDATE_CONN_TIMEOUT 100000;
 
 //buttons
 #define SW0_NODE	DT_ALIAS(sw0)
@@ -30,10 +30,10 @@
 #define SW2_NODE	DT_ALIAS(sw2)
 #define SW3_NODE	DT_ALIAS(sw3)
 
-static const struct gpio_dt_spec button1 = GPIO_DT_SPEC_GET_OR(SW0_NODE, gpios, {0});
-static const struct gpio_dt_spec button2 = GPIO_DT_SPEC_GET_OR(SW1_NODE, gpios, {0});
-static const struct gpio_dt_spec button3 = GPIO_DT_SPEC_GET_OR(SW2_NODE, gpios, {0});
-static const struct gpio_dt_spec button4 = GPIO_DT_SPEC_GET_OR(SW3_NODE, gpios, {0});
+static const struct gpio_dt_spec button1 = GPIO_DT_SPEC_GET_OR(SW0_NODE, gpios, { 0 });
+static const struct gpio_dt_spec button2 = GPIO_DT_SPEC_GET_OR(SW1_NODE, gpios, { 0 });
+static const struct gpio_dt_spec button3 = GPIO_DT_SPEC_GET_OR(SW2_NODE, gpios, { 0 });
+static const struct gpio_dt_spec button4 = GPIO_DT_SPEC_GET_OR(SW3_NODE, gpios, { 0 });
 
 static struct gpio_callback button1_cb_data;
 static struct gpio_callback button2_cb_data;
@@ -47,20 +47,20 @@ uint32_t characteristic3_value = 0x0;
 uint32_t characteristic4_value = 0x0;
 
 void init_button(const struct gpio_dt_spec* button,
-                 struct gpio_callback* button_cb_data,
-				 gpio_callback_handler_t cb) {
+	struct gpio_callback* button_cb_data,
+	gpio_callback_handler_t cb) {
 	int ret;
 
 	if (!device_is_ready(button->port)) {
 		printk("Error: button device %s is not ready\n",
-		       button->port->name);
+			button->port->name);
 		return;
 	}
 
 	ret = gpio_pin_configure_dt(button, GPIO_INPUT);
 	if (ret != 0) {
 		printk("Error %d: failed to configure %s pin %d\n",
-		       ret, button->port->name, button->pin);
+			ret, button->port->name, button->pin);
 		return;
 	}
 
@@ -77,7 +77,7 @@ void init_button(const struct gpio_dt_spec* button,
 }
 
 
-static ssize_t characteristic_read(struct bt_conn *conn, const struct bt_gatt_attr *attr, void *buf, uint16_t len, uint16_t offset);
+static ssize_t characteristic_read(struct bt_conn* conn, const struct bt_gatt_attr* attr, void* buf, uint16_t len, uint16_t offset);
 
 // Set up the advertisement data.
 #define DEVICE_NAME "Group12"
@@ -88,12 +88,12 @@ static const struct bt_data ad[] = {
 	BT_DATA_BYTES(BT_DATA_UUID128_ALL, LAB2_SERVICE_UUID)
 };
 
-void on_cccd_changed(const struct bt_gatt_attr *attr, uint16_t value){
+void on_cccd_changed(const struct bt_gatt_attr* attr, uint16_t value) {
 	// check if notifciation is enabled here
-	if (value == BT_GATT_CCC_NOTIFY){
+	if (value == BT_GATT_CCC_NOTIFY) {
 		printk("notify");
 	}
-	else{
+	else {
 		printk("notify not enabled");
 	}
 
@@ -103,7 +103,7 @@ void on_cccd_changed(const struct bt_gatt_attr *attr, uint16_t value){
 	// 	case BT_GATT_CCC_NOTIFY:
 	// 	printk("notify");
 	// }
-	
+
 	// init_button(&button1, &button1_cb_data, button1_pressed);
 	// init_button(&button2, &button2_cb_data, button2_pressed);
 	// init_button(&button3, &button3_cb_data, button3_pressed);
@@ -117,48 +117,48 @@ BT_GATT_SERVICE_DEFINE(lab2_service,
 	),
 	// 4 characterstics
 	BT_GATT_CHARACTERISTIC(BT_UUID_DECLARE_16(0x0001), BT_GATT_CHRC_NOTIFY,
-			       BT_GATT_PERM_READ, characteristic_read, NULL, &characteristic1_value),
+		BT_GATT_PERM_READ, characteristic_read, NULL, &characteristic1_value),
 	BT_GATT_CCC(on_cccd_changed, BT_GATT_PERM_READ | BT_GATT_PERM_WRITE), // notifies a change
 
 
 	BT_GATT_CHARACTERISTIC(BT_UUID_DECLARE_16(0x0002), BT_GATT_CHRC_NOTIFY,
-			       BT_GATT_PERM_READ, characteristic_read, NULL, &characteristic2_value),
+		BT_GATT_PERM_READ, characteristic_read, NULL, &characteristic2_value),
 	BT_GATT_CCC(on_cccd_changed, BT_GATT_PERM_READ | BT_GATT_PERM_WRITE), // notifies a change
 
 
 	BT_GATT_CHARACTERISTIC(BT_UUID_DECLARE_16(0x0003), BT_GATT_CHRC_NOTIFY,
-			       BT_GATT_PERM_READ, characteristic_read, NULL, &characteristic3_value),
+		BT_GATT_PERM_READ, characteristic_read, NULL, &characteristic3_value),
 	BT_GATT_CCC(on_cccd_changed, BT_GATT_PERM_READ | BT_GATT_PERM_WRITE), // notifies a change
 
 
 	BT_GATT_CHARACTERISTIC(BT_UUID_DECLARE_16(0x0004), BT_GATT_CHRC_NOTIFY,
-			       BT_GATT_PERM_READ, characteristic_read, NULL, &characteristic4_value),
+		BT_GATT_PERM_READ, characteristic_read, NULL, &characteristic4_value),
 	BT_GATT_CCC(on_cccd_changed, BT_GATT_PERM_READ | BT_GATT_PERM_WRITE), // notifies a change
 
-);
+	);
 
 
 
 // Callback when a client reads the characteristic.
 //
 // Documented under name "bt_gatt_attr_read_chrc()"
-static ssize_t characteristic_read(struct bt_conn *conn,
-			                       const struct bt_gatt_attr *attr,
-								   void *buf,
-			                       uint16_t len,
-								   uint16_t offset)
+static ssize_t characteristic_read(struct bt_conn* conn,
+	const struct bt_gatt_attr* attr,
+	void* buf,
+	uint16_t len,
+	uint16_t offset)
 {
 	// The `user_data` corresponds to the pointer provided as the last "argument"
 	// to the `BT_GATT_CHARACTERISTIC` macro.
-	uint32_t *value = attr->user_data;
+	uint32_t* value = attr->user_data;
 
 	// Need to encode data into a buffer to send to client.
-	uint8_t out_buffer[4] = {0};
+	uint8_t out_buffer[4] = { 0 };
 
-	out_buffer[0]=0xc5;
-	out_buffer[1]=0xec;
-	out_buffer[2]=0x45;
-	out_buffer[3]=0x01;
+	out_buffer[0] = 0xc5;
+	out_buffer[1] = 0xec;
+	out_buffer[2] = 0x45;
+	out_buffer[3] = 0x01;
 
 	// User helper function to encode the output data to send to
 	// the client.
@@ -167,16 +167,17 @@ static ssize_t characteristic_read(struct bt_conn *conn,
 
 
 // Setup callbacks when devices connect and disconnect.
-static void connected(struct bt_conn *conn, uint8_t err)
+static void connected(struct bt_conn* conn, uint8_t err)
 {
 	if (err) {
 		printk("Connection failed (err 0x%02x)\n", err);
-	} else {
+	}
+	else {
 		printk("Connected\n");
 	}
 }
 
-static void disconnected(struct bt_conn *conn, uint8_t reason)
+static void disconnected(struct bt_conn* conn, uint8_t reason)
 {
 	printk("Disconnected (reason 0x%02x)\n", reason);
 }
@@ -206,36 +207,49 @@ static void bt_ready(int err)
 }
 
 
-void button1_pressed(const struct device *dev, struct gpio_callback *cb, uint32_t pins)
+void button1_pressed(const struct device* dev, struct gpio_callback* cb, uint32_t pins)
 {
-	characteristic1_value = 0x1;
-	bt_gatt_notify(NULL, &lab2_service.attrs[0], &characteristic1_value, sizeof(characteristic1_value));
-	int val = gpio_pin_get_dt(&button1);
-	printk("Button1 %i\n", val);
+	int error;
+	int val1 = gpio_pin_get_dt(&button1);
+	//characteristic1_value = 0x1;
+	error = bt_gatt_notify(NULL, &lab2_service.attrs[1], &val1, 1);
+	if (error < 0) {
+		printk("error");
+	}
+	printk("Button1 %i\n", val1);
 }
 
-void button2_pressed(const struct device *dev, struct gpio_callback *cb, uint32_t pins)
+void button2_pressed(const struct device* dev, struct gpio_callback* cb, uint32_t pins)
 {
-	int val = gpio_pin_get_dt(&button2);
-	characteristic2_value = 0x1;
-	bt_gatt_notify(NULL, &lab2_service.attrs[1], &characteristic2_value, sizeof(characteristic2_value));
-	printk("Button2 %i\n", val);
+	int val2 = gpio_pin_get_dt(&button2);
+	//characteristic2_value = 0x1;
+	int error = bt_gatt_notify(NULL, &lab2_service.attrs[4], &val2, 1);
+	if (error < 0) {
+		printk("error");
+	}
+	printk("Button2 %i\n", val2);
 }
 
-void button3_pressed(const struct device *dev, struct gpio_callback *cb, uint32_t pins)
+void button3_pressed(const struct device* dev, struct gpio_callback* cb, uint32_t pins)
 {
-	int val = gpio_pin_get_dt(&button3);
-	characteristic3_value = 0x1;
-	bt_gatt_notify(NULL, &lab2_service.attrs[2], &characteristic3_value, sizeof(characteristic3_value));
-	printk("Button3 %i\n", val);
+	int val3 = gpio_pin_get_dt(&button3);
+	//characteristic3_value = 0x1;
+	int error = bt_gatt_notify(NULL, &lab2_service.attrs[7], &val3, 1);
+	if (error < 0) {
+		printk("error");
+	}
+	printk("Button3 %i\n", val3);
 }
 
-void button4_pressed(const struct device *dev, struct gpio_callback *cb, uint32_t pins)
+void button4_pressed(const struct device* dev, struct gpio_callback* cb, uint32_t pins)
 {
-	int val = gpio_pin_get_dt(&button4);
-	characteristic4_value = 0x1;
-	bt_gatt_notify(NULL, &lab2_service.attrs[3], &characteristic4_value, sizeof(characteristic4_value));
-	printk("Button4 %i\n", val);
+	int val4 = gpio_pin_get_dt(&button4);
+	//characteristic4_value = 0x1;
+	int error = bt_gatt_notify(NULL, &lab2_service.attrs[10], &val4, 1);
+	if (error < 0) {
+		printk("error");
+	}
+	printk("Button4 %i\n", val4);
 }
 
 
