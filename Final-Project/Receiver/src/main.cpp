@@ -162,8 +162,9 @@ if(rx_flag) {
     // reset flag
     rx_flag = false;
     // you can read received data as an Arduino String
-    String rx_data = "";
-    int state = radio.readData(rx_data);
+    //String rx_data;
+    byte byteArr [255];
+    int state = radio.readData(byteArr, sizeof(byteArr));
 
     if (state == RADIOLIB_ERR_NONE) {
       // packet was successfully received
@@ -171,8 +172,10 @@ if(rx_flag) {
 
       // print data of the packet
       Serial.println(F("[SX1262] Data:\t\t"));
-      Serial.println(rx_data);
-
+      for(int i = 0; i < 255; i++){
+        Serial.println(byteArr[i]);
+      }
+      Serial.println();
       // print RSSI (Received Signal Strength Indicator)
       Serial.print(F("[SX1262] RSSI:\t\t"));
       Serial.print(radio.getRSSI());

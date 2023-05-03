@@ -34,6 +34,12 @@ static const int8_t TX_PWR = 20;
 volatile bool tx_flag = false;
 volatile bool rx_flag = false;
 
+struct DataPacket {
+  int val;
+};
+
+DataPacket packet;
+
 SX1262 radio = new Module(LORA_CS, LORA_DIO1, LORA_NRST, LORA_BUSY);
 
 // this function is called when a complete packet
@@ -50,10 +56,6 @@ void setFlag(void) {
     rx_flag = true;
 }
 
-void buttonISR(){
-  tx_flag = true;
-}
-
 // It is important to remember that ISRs are supposed to be short and are mostly used for triggering flags. 
 // doing Serial.print() might fail and cause device resets. This is because Serial.print() uses interrupt to read data, 
 // but in an ISR, all other interrupts are suspended, and therefore the operation fails. 
@@ -67,9 +69,6 @@ void error_message(const char* message, int16_t state) {
 void setup() {
   Serial.begin(115200);
   // Create a transmit interrupt when the button is pressed. 
-  pinMode(BUTTON, INPUT);
-  attachInterrupt(digitalPinToInterrupt(BUTTON), buttonISR, FALLING);
-
   // initialize SX1262 with default settings
   Serial.print(F("[SX1262] Initializing ... "));
   int state = radio.begin();
@@ -124,15 +123,31 @@ void setup() {
 }
 
 void loop() {
-String tx_payload = Serial.readString(); 
+//String tx_payload = Serial.readString(); 
+byte byteArr[10000];
+size_t incoming_byte = Serial.readBytes(byteArr, sizeof(byteArr));
 
-if (tx_payload != "") {
+for(int i=incoming_byte; i<10000; i++){
+  byteArr[i] = 0;
+}
+
+if (incoming_byte != 0) {
+  tx_flag = true;
+}
+
+if (tx_flag) {
   Serial.print(F("[SX1262] Transmitting packet ... "));
 
     // you can transmit C-string or Arduino string up to
     // 256 characters long
     // NOTE: transmit() is a blocking method!
-    int state = radio.transmit(tx_payload);
+    byte temp_buf [256];
+
+    /*
+    Send multiple packets
+    */
+
+    int state = radio.transmit(byteArr, sizeof(byteArr));
 
     if (state == RADIOLIB_ERR_NONE) {
       // the packet was successfully transmitted
@@ -157,6 +172,7 @@ if (tx_payload != "") {
       Serial.println(state);
     }
     radio.startReceive();   // you can put a return value on this and check if the device was set to receive mode if needed
+    tx_flag = false;
 }
 if(rx_flag) {
     // reset flag
