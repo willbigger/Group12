@@ -29,7 +29,7 @@ static const int8_t TX_PWR = 20;
 // static const uint16_t PREAMBLE = 8;
 
 /****************Payload******************/
-String tx_payload = "Transmission from Group 12!";    // change this to something unique to your group/something you want to say to each other
+String tx_payload = "";    // change this to something unique to your group/something you want to say to each other
 
 /****************transceiver flags******************/
 volatile bool tx_flag = false;
@@ -162,7 +162,7 @@ if(rx_flag) {
     // reset flag
     rx_flag = false;
     // you can read received data as an Arduino String
-    String rx_data;
+    String rx_data = "";
     int state = radio.readData(rx_data);
 
     if (state == RADIOLIB_ERR_NONE) {
@@ -170,7 +170,7 @@ if(rx_flag) {
       Serial.println(F("[SX1262] Received packet!"));
 
       // print data of the packet
-      Serial.print(F("[SX1262] Data:\t\t"));
+      Serial.println(F("[SX1262] Data:\t\t"));
       Serial.println(rx_data);
 
       // print RSSI (Received Signal Strength Indicator)
