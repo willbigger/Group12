@@ -17,7 +17,14 @@ while True:
             for line in file.readlines():
                 write_read("0"+line)
     elif usr_input[:3] == "SF:":
-        arduino.write(bytes("1", 'utf-8'))
-        arduino.write(bytes(str(usr_input[3:]), 'utf-8'))
+        arduino.write(bytes("1" + str(usr_input[3:]), 'utf-8'))
+    elif usr_input[:3] == "BW:":
+        arduino.write(bytes("2" + str(usr_input[3:]), 'utf-8'))
+    elif usr_input[:3] == "FQ:":
+        arduino.write(bytes("3" + str(usr_input[3:]), 'utf-8'))
     else:
         print("\n\nInvalid input")
+        board_output = "."
+        while board_output != "":
+            board_output = arduino.readline().decode().strip()
+            print(board_output)

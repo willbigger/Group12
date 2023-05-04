@@ -20,10 +20,10 @@ static const int LORA_BUSY  = 13;
 static const int BUTTON     = 0;
 
 /****************LoRa parameters (you need to fill these params)******************/
-static const float FREQ = 911.9;
-static const float BW = 125;
-static const uint8_t SF = 7;
-static const int8_t TX_PWR = 20;
+float FREQ = 911.9;
+float BW = 125;
+uint8_t SF = 7;
+int8_t TX_PWR = 20;
 // static const uint8_t CR = 5;
 // static const uint8_t SYNC_WORD = (uint8_t)0x34;
 // static const uint16_t PREAMBLE = 8;
@@ -128,6 +128,8 @@ String tx_payload = Serial.readStringUntil('\n');
 const char * c = tx_payload.c_str();
 const char * compare = "0";
 const char * SF_compare = "1";
+const char * F_compare = "2";
+const char * BW_compare = "3";
 
 if (c[0] == compare[0]) {
   Serial.print(F("[SX1262] Transmitting packet ... "));
@@ -161,14 +163,18 @@ if (c[0] == compare[0]) {
       Serial.println(state);
     }
     radio.startReceive();   // you can put a return value on this and check if the device was set to receive mode if needed
-} else if (c[0] == SF_compare[0])
-{
+} else if (c[0] == SF_compare[0]){
   char new_SF = c[1];
-  static const uint8_t change = new_SF - '0';
-  int state = radio.setSpreadingFactor(change);
-  if (state != RADIOLIB_ERR_NONE) {
-      error_message("SF intialization failed", state);
-  }
+  SF = new_SF - '0';
+  setup();
+} else if (c[0] == F_compare[0]){
+  //char new_SF = c[1];
+  FREQ = 911.9;
+  setup();
+} else if (c[0] == BW_compare[0]){
+  //char new_SF = c[1];
+  BW = 125;
+  setup();
 }
 
 if(rx_flag) {
