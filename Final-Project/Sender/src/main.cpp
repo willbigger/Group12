@@ -143,6 +143,8 @@ if (c[0] == compare[0]) {
       // the packet was successfully transmitted
       Serial.println(F("success!"));
 
+      Serial.println(tx_payload);
+
       // print measured data rate
       Serial.print(F("[SX1262] Datarate:\t"));
       Serial.print(radio.getDataRate());
