@@ -135,6 +135,9 @@ if (incoming_byte != 0) {
   tx_flag = true;
 }
 
+int total_byte = static_cast<int>(incoming_byte);
+int counter = 0;  // to keep track of which byte index it is 
+
 if (tx_flag) {
   Serial.print(F("[SX1262] Transmitting packet ... "));
 
@@ -142,12 +145,24 @@ if (tx_flag) {
     // 256 characters long
     // NOTE: transmit() is a blocking method!
     byte temp_buf [256];
-
+    
     /*
     Send multiple packets
     */
+   while (counter < total_byte){
+    for (int i = 0; i < 256; i++){
+      if (counter < total_byte){
+        temp_buf[i] = byteArr[counter];
+        counter ++;
+      }
+      else {
+        temp_buf[i] = 0;
+        counter ++;
+      }
+      
+    }
 
-    int state = radio.transmit(byteArr, sizeof(byteArr));
+    int state = radio.transmit(temp_buf, sizeof(temp_buf));
 
     if (state == RADIOLIB_ERR_NONE) {
       // the packet was successfully transmitted
@@ -171,6 +186,9 @@ if (tx_flag) {
       Serial.print(F("failed, code "));
       Serial.println(state);
     }
+   }
+
+    
     radio.startReceive();   // you can put a return value on this and check if the device was set to receive mode if needed
     tx_flag = false;
 }
