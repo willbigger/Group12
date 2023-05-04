@@ -124,7 +124,7 @@ void setup() {
 }
 
 void loop() {
-String tx_payload = Serial.readString(); 
+String tx_payload = Serial.readStringUntil('\n'); 
 const char * c = tx_payload.c_str();
 const char * compare = "0";
 const char * SF_compare = "1";
@@ -149,6 +149,7 @@ if (c[0] == compare[0]) {
     } else if (state == RADIOLIB_ERR_PACKET_TOO_LONG) {
       // the supplied packet was longer than 256 bytes
       Serial.println(F("too long!"));
+      Serial.println(tx_payload);
 
     } else if (state == RADIOLIB_ERR_TX_TIMEOUT) {
       // timeout occured while transmitting packet
