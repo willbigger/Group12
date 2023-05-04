@@ -125,8 +125,11 @@ void setup() {
 
 void loop() {
 String tx_payload = Serial.readString(); 
+const char * c = tx_payload.c_str();
+const char * compare = "0";
+const char * SF_compare = "1";
 
-if (tx_payload != "") {
+if (c[0] == compare[0]) {
   Serial.print(F("[SX1262] Transmitting packet ... "));
 
     // you can transmit C-string or Arduino string up to
@@ -157,7 +160,16 @@ if (tx_payload != "") {
       Serial.println(state);
     }
     radio.startReceive();   // you can put a return value on this and check if the device was set to receive mode if needed
+} else if (c[0] == SF_compare[0])
+{
+  char new_SF = c[1];
+  static const uint8_t change = new_SF - '0';
+  int state = radio.setSpreadingFactor(change);
+  if (state != RADIOLIB_ERR_NONE) {
+      error_message("SF intialization failed", state);
+  }
 }
+
 if(rx_flag) {
     // reset flag
     rx_flag = false;
