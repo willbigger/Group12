@@ -10,6 +10,7 @@ while True:
     with open ('EncoderOutput.npy', 'rb') as file:
         input("Send?\n") # Taking input from user
         write_read(file.read().strip())
+        
     board_output = "."
     while board_output != "":
         board_output = arduino.readline().decode().strip()
