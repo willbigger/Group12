@@ -167,21 +167,21 @@ if(rx_flag) {
 
     if (state == RADIOLIB_ERR_NONE) {
       // packet was successfully received
-      Serial.println(F("[SX1262] Received packet!"));
+      //Serial.println(F("[SX1262] Received packet!"));
 
       // print data of the packet
-      Serial.println(F("[SX1262] Data:\t\t"));
+      //Serial.println(F("[SX1262] Data:\t\t"));
       Serial.println(rx_data);
 
       // print RSSI (Received Signal Strength Indicator)
-      Serial.print(F("[SX1262] RSSI:\t\t"));
-      Serial.print(radio.getRSSI());
-      Serial.println(F(" dBm"));
+      //Serial.print(F("[SX1262] RSSI:\t\t"));
+      //Serial.print(radio.getRSSI());
+      //Serial.println(F(" dBm"));
 
       // print SNR (Signal-to-Noise Ratio)
-      Serial.print(F("[SX1262] SNR:\t\t"));
-      Serial.print(radio.getSNR());
-      Serial.println(F(" dB"));
+      //Serial.print(F("[SX1262] SNR:\t\t"));
+      //Serial.print(radio.getSNR());
+      //Serial.println(F(" dB"));
 
     } else if (state == RADIOLIB_ERR_CRC_MISMATCH) {
       // packet was received, but is malformed
